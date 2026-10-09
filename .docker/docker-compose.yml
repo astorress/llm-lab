@@ -1,0 +1,67 @@
+services:
+  llm_lab:
+    container_name: 'LLMLab'
+    build:
+      context: ..
+      dockerfile: .docker/Dockerfile
+      target: img-dev
+      args:
+        # true = instala también los extras de los notebooks 00–08 (+ varios GB)
+        WITH_NOTEBOOKS: 'false'
+    ports:
+      # JupyterLab para notebooks (jupyter lab --ip 0.0.0.0 --no-browser)
+      - 8888:8888
+    volumes:
+      - ..:/app
+      # repositorio-personal en solo-lectura: fuente del corpus personal
+      - ../..:/personal:ro
+      - llm-lab-bashhistory:/commandhistory
+      - llm-lab-hf-cache:/hf-cache
+    env_file:
+      - ../.envs/hf.env
+    environment:
+      - PERSONAL_ROOT=/personal
+      - PYTHONPATH=/app/src
+    working_dir: /app
+    # La tokenización y el filtrado usan todos los cores; dale RAM suficiente
+    # a Docker Desktop (Settings → Resources: ≥ 8 GB).
+    shm_size: '2gb'
+    restart: unless-stopped
+    command:
+      - /bin/sh
+      - -c
+      - sleep infinity
+
+  # Mismo proyecto con GPU NVIDIA (solo en hosts Linux con nvidia-container-toolkit):
+  #   docker compose -f .docker/docker-compose.yml --profile gpu up -d llm_lab_gpu
+  llm_lab_gpu:
+    profiles: [gpu]
+    container_name: 'LLMLabGPU'
+    build:
+      context: ..
+      dockerfile: .docker/Dockerfile
+      target: img-gpu
+    volumes:
+      - ..:/app
+      - llm-lab-hf-cache:/hf-cache
+    env_file:
+      - ../.envs/hf.env
+    environment:
+      - PYTHONPATH=/app/src
+    working_dir: /app
+    shm_size: '8gb'
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command:
+      - /bin/sh
+      - -c
+      - sleep infinity
+
+volumes:
+  llm-lab-bashhistory:
+  llm-lab-hf-cache:

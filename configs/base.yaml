@@ -1,0 +1,37 @@
+# ──────────────────────────────────────────────────────────────────
+# configs/base.yaml — Configuración base compartida por todas las fases.
+# Los perfiles small.yaml / large.yaml sobreescriben estos valores.
+# Cargar con: from llm_lab.utils.config import load_config
+#             cfg = load_config("base", profile="small")
+# ──────────────────────────────────────────────────────────────────
+
+project:
+  name: llm-lab
+  stage: 1
+  language: es          # prosa en español, código en inglés
+  seed: 42
+
+paths:
+  datasets: datasets
+  raw: datasets/raw
+  processed: datasets/processed
+  splits: datasets/splits
+  tokenizer: tokenizer/trained
+  embeddings: embeddings/trained
+  checkpoints: checkpoints
+  logs: logs
+  outputs: outputs
+
+logging:
+  level: INFO
+  log_every_steps: 10
+  save_metrics_jsonl: true     # logs/metrics_<run>.jsonl
+
+reproducibility:
+  seed: 42
+  deterministic_cudnn: true    # más lento pero reproducible
+  warn_nondeterministic: true
+
+hardware:
+  device: auto                 # auto-detección: cuda > mps > cpu
+  mixed_precision: auto        # bf16 si la GPU lo soporta (A100), fp16 en T4, off en CPU

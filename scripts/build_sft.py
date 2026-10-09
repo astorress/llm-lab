@@ -1,0 +1,340 @@
+#!/usr/bin/env python3
+"""Construye el dataset de instruction tuning (SFT) del laboratorio.
+
+Genera pares instrucción→respuesta de calidad en formato ``messages``
+(estilo chat), cubriendo los dominios del corpus. Es el dataset que consume
+el notebook 07 (fine-tuning con LoRA). Escribe:
+
+    datasets/sft/instructions.jsonl   (todos los ejemplos)
+    datasets/sft/train.jsonl / val.jsonl
+
+Cada línea: {"messages": [{"role","content"}, ...], "domain": "..."}.
+La respuesta del asistente es autocontenida y técnicamente correcta
+(principio LIMA: calidad > cantidad).
+"""
+
+from __future__ import annotations
+
+import json
+import random
+from collections import Counter
+from pathlib import Path
+
+REPO = Path(__file__).resolve().parents[1]
+SFT_DIR = REPO / "datasets" / "sft"
+
+# (dominio, instrucción, respuesta)
+EXAMPLES: list[tuple[str, str, str]] = [
+    ("metaheuristica",
+     "¿Cuándo usar una metaheurística en lugar de un solver exacto?",
+     "Cuando el problema es NP-difícil o de caja negra y el tamaño hace inviable un método exacto en tiempo "
+     "razonable: ruteo de vehículos grande, scheduling con muchas restricciones o funciones objetivo no "
+     "diferenciables. Una metaheurística (algoritmo genético, recocido simulado, búsqueda tabú, PSO) entrega "
+     "soluciones buenas rápidamente, pero sin garantía de optimalidad. Si el problema es lineal o convexo de "
+     "tamaño moderado, un solver exacto es preferible porque certifica el óptimo."),
+    ("metaheuristica",
+     "Explica el equilibrio entre exploración y explotación.",
+     "Explorar es buscar en regiones nuevas del espacio de soluciones; explotar es refinar alrededor de las "
+     "mejores soluciones conocidas. Poca exploración causa convergencia prematura a un óptimo local; poca "
+     "explotación convierte la búsqueda en muestreo aleatorio. Cada metaheurística lo regula con parámetros: la "
+     "temperatura en recocido simulado, la tasa de mutación y la presión de selección en algoritmos genéticos, "
+     "o la inercia en PSO."),
+    ("llm",
+     "¿Qué diferencia hay entre RAG y fine-tuning?",
+     "RAG recupera documentos relevantes en tiempo de consulta y los agrega al prompt: actualiza el "
+     "conocimiento sin reentrenar y permite citar fuentes. El fine-tuning modifica los pesos del modelo para "
+     "cambiar su estilo, formato o habilidades. Para conocimiento que cambia con frecuencia conviene RAG; para "
+     "enseñar un comportamiento o formato consistente, fine-tuning (por ejemplo con LoRA). A menudo se combinan."),
+    ("llm",
+     "¿Por qué alucinan los modelos de lenguaje?",
+     "Porque se entrenan para producir la continuación más plausible, no la más verdadera: si el dato no está "
+     "bien representado en su entrenamiento, generan texto fluido pero inventado. Se mitiga con RAG para anclar "
+     "las respuestas en fuentes, permitiendo explícitamente responder 'no sé', pidiendo razonamiento paso a paso "
+     "y evaluando con preguntas de verificación propias."),
+    ("full_stack",
+     "¿Qué es el renderizado del lado del servidor (SSR) y cuándo conviene?",
+     "En SSR el servidor genera el HTML de cada página con los datos ya incluidos y el navegador lo muestra "
+     "de inmediato; luego JavaScript 'hidrata' la página para hacerla interactiva. Conviene cuando importan el "
+     "SEO y el tiempo de primera carga (sitios de contenido, e-commerce). Para paneles internos detrás de login, "
+     "una SPA renderizada en el cliente suele ser suficiente y más simple."),
+    ("full_stack",
+     "¿Cómo manejar la autenticación en una aplicación web?",
+     "Hay dos enfoques comunes: sesiones en el servidor con una cookie httpOnly, o tokens JWT firmados. Las "
+     "cookies httpOnly y SameSite protegen frente a XSS y CSRF; los JWT facilitan APIs sin estado pero son "
+     "difíciles de revocar, por lo que deben ser de corta duración con refresh tokens. Para login social o "
+     "empresarial se delega en OAuth 2.0/OpenID Connect. Nunca se guardan contraseñas en claro: se usa un hash "
+     "lento como bcrypt o Argon2."),
+    ("analitica",
+     "¿Qué hace que un KPI sea bueno?",
+     "Un buen KPI está ligado a un objetivo de negocio, tiene una definición única y documentada, es medible "
+     "con datos confiables, tiene una meta y un responsable, y es accionable: si se mueve, alguien sabe qué "
+     "decisión tomar. Conviene acompañar cada KPI de resultado (ventas) con indicadores adelantados que lo "
+     "expliquen (tasa de conversión, tráfico)."),
+    ("analitica",
+     "Explica el análisis de cohortes.",
+     "Agrupa usuarios por el periodo en que ocurrió un evento común, como el mes de registro, y compara su "
+     "comportamiento en el tiempo, típicamente la retención. Al ver cada cohorte por separado se distingue si "
+     "un cambio de producto mejoró la experiencia de los usuarios nuevos, algo que un promedio global oculta "
+     "porque mezcla usuarios antiguos y recientes."),
+    ("filosofia",
+     "¿Qué es el problema de la inducción de Hume?",
+     "Hume señaló que ninguna cantidad de observaciones pasadas justifica lógicamente que el futuro se "
+     "parecerá al pasado: inferir que el sol saldrá mañana porque siempre ha salido supone la uniformidad de la "
+     "naturaleza, que a su vez solo se apoya en la experiencia. Popper respondió que la ciencia no verifica "
+     "teorías por inducción sino que las somete a intentos de falsación. El problema sigue vigente en el "
+     "aprendizaje automático: generalizar más allá de los datos siempre exige supuestos."),
+    ("filosofia",
+     "Compara la ética de Kant con el utilitarismo.",
+     "Kant juzga las acciones por el deber: el imperativo categórico pide actuar solo según máximas "
+     "universalizables y tratar a las personas siempre como fines, nunca solo como medios; algunas acciones "
+     "están prohibidas sin importar sus consecuencias. El utilitarismo de Bentham y Mill juzga por los "
+     "resultados: es correcto lo que maximiza el bienestar total. El primero protege derechos individuales; el "
+     "segundo es sensible a las consecuencias pero puede justificar sacrificar a unos por el bien de muchos."),
+    ("musica",
+     "¿Por qué la cadencia V–I suena a resolución?",
+     "El acorde de dominante (V) contiene la sensible, que está a un semitono de la tónica, y en su versión con "
+     "séptima un tritono inestable. Al pasar al acorde de tónica (I), la sensible sube a la tónica y el tritono "
+     "se resuelve hacia una tercera, lo que el oído percibe como tensión que se libera. Por eso la cadencia "
+     "perfecta V–I cierra frases y piezas en la música tonal."),
+    ("musica",
+     "¿Qué es MIDI y en qué se diferencia del audio?",
+     "MIDI es un protocolo que describe la música como eventos: qué nota, con qué intensidad (velocidad), "
+     "cuándo empieza y cuándo termina, más controles como el pedal. No contiene sonido: un sintetizador o un "
+     "instrumento virtual lo convierte en audio. El audio, en cambio, es la onda sonora muestreada (por ejemplo "
+     "44.1 kHz). MIDI se edita nota por nota y pesa muy poco; el audio captura el timbre real de una interpretación."),
+    ("ingenieria_electrica",
+     "Enuncia las leyes de Kirchhoff.",
+     "La ley de corrientes de Kirchhoff (LCK) dice que la suma algebraica de las corrientes que entran a un "
+     "nodo es cero (conservación de la carga). La ley de voltajes (LVK) dice que la suma algebraica de las "
+     "diferencias de potencial en un lazo cerrado es cero (conservación de la energía). Juntas, con la ley "
+     "de Ohm, permiten resolver cualquier circuito lineal por análisis nodal o de mallas."),
+    ("ingenieria_electrica",
+     "¿Qué es el factor de potencia y por qué se corrige?",
+     "El factor de potencia, cos(φ), es la fracción de la potencia aparente que se convierte en potencia "
+     "activa útil. Cargas inductivas (motores) lo reducen, aumentando la corriente para la misma potencia "
+     "útil y, con ella, las pérdidas. Se corrige con bancos de capacitores que aportan reactiva, acercando "
+     "el factor a 1 y liberando capacidad en la red."),
+    ("machine_learning",
+     "¿Cómo funciona el descenso de gradiente?",
+     "El descenso de gradiente minimiza una función de pérdida actualizando los parámetros en la dirección "
+     "opuesta al gradiente: θ ← θ − η·∇L(θ), con η la tasa de aprendizaje. El gradiente apunta al mayor "
+     "crecimiento, así que su negativo reduce la pérdida. En la práctica se usa SGD sobre minibatches, cuyo "
+     "ruido ayuda a escapar de mínimos pobres."),
+    ("machine_learning",
+     "¿Cuál es la diferencia entre regularización L1 y L2?",
+     "La regularización L2 (ridge) penaliza la suma de cuadrados de los pesos y los empuja hacia valores "
+     "pequeños sin anularlos, dando soluciones suaves. La L1 (lasso) penaliza la suma de valores absolutos "
+     "e induce esparsidad: muchos pesos se vuelven exactamente cero, realizando selección de "
+     "características. Elastic Net combina ambas."),
+    ("machine_learning",
+     "¿Qué es el sobreajuste y cómo se detecta?",
+     "El sobreajuste (overfitting) ocurre cuando un modelo memoriza el ruido del entrenamiento y generaliza "
+     "mal a datos nuevos; se asocia a alta varianza. Se detecta cuando el error de entrenamiento es bajo "
+     "pero el de validación es alto. Se mitiga con regularización, más datos, early stopping o reduciendo "
+     "la complejidad del modelo."),
+    ("deep_learning",
+     "¿Qué resuelve la retropropagación?",
+     "La retropropagación calcula eficientemente el gradiente de la pérdida respecto a todos los parámetros "
+     "de una red aplicando la regla de la cadena sobre el grafo computacional. Reutiliza las activaciones "
+     "de la pasada hacia adelante, con un costo del mismo orden, lo que hace viable entrenar redes "
+     "profundas. Es diferenciación automática en modo reverso."),
+    ("deep_learning",
+     "¿Por qué ReLU mitiga el gradiente que se desvanece?",
+     "Las funciones sigmoide y tanh saturan en sus extremos, donde su derivada tiende a cero, y al "
+     "retropropagar por muchas capas el gradiente se vuelve minúsculo. ReLU(x)=max(0,x) tiene derivada "
+     "constante 1 para entradas positivas, así que no atenúa el gradiente en ese régimen, permitiendo "
+     "entrenar redes más profundas."),
+    ("inteligencia_artificial",
+     "¿Qué garantiza la optimalidad del algoritmo A*?",
+     "A* es óptimo y completo si su heurística h(n) es admisible (nunca sobreestima el costo real al "
+     "objetivo) y consistente (cumple la desigualdad triangular). Expande el nodo de menor f(n)=g(n)+h(n), "
+     "combinando el costo acumulado y la estimación restante. Una heurística más informada reduce los nodos "
+     "expandidos sin perder optimalidad."),
+    ("inteligencia_artificial",
+     "¿Qué es un proceso de decisión de Markov (MDP)?",
+     "Un MDP formaliza la toma de decisiones secuencial con estados, acciones, una función de transición "
+     "P(s'|s,a) y una recompensa r(s,a). El objetivo es una política π que maximice la recompensa acumulada "
+     "esperada con descuento γ. Las funciones de valor satisfacen las ecuaciones de Bellman, base de "
+     "algoritmos como Q-learning y los métodos de gradiente de política."),
+    ("matematicas",
+     "¿Qué es la descomposición en valores singulares (SVD)?",
+     "La SVD factoriza cualquier matriz A (m×n) como A=UΣVᵀ, con U y V ortogonales y Σ diagonal con los "
+     "valores singulares ordenados. Revela el rango, la norma espectral y la mejor aproximación de rango k "
+     "(teorema de Eckart-Young). Sustenta PCA, sistemas de recomendación, compresión y la pseudoinversa."),
+    ("matematicas",
+     "¿Qué representa el gradiente de una función?",
+     "El gradiente ∇f de una función escalar es el vector de sus derivadas parciales; apunta en la "
+     "dirección de máximo crecimiento y su norma da la pendiente máxima en ese punto. Es la base del "
+     "descenso de gradiente: moverse en −∇f reduce la función localmente."),
+    ("estadistica",
+     "¿Qué es la estimación por máxima verosimilitud?",
+     "La máxima verosimilitud (MLE) elige los parámetros que maximizan la probabilidad de los datos "
+     "observados bajo el modelo. En la práctica se maximiza la log-verosimilitud por estabilidad numérica. "
+     "Minimizar la entropía cruzada de un clasificador equivale a MLE de una distribución categórica."),
+    ("estadistica",
+     "Explica el teorema de Bayes.",
+     "El teorema de Bayes actualiza creencias ante evidencia: P(θ|datos) ∝ P(datos|θ)·P(θ). El posterior es "
+     "proporcional a la verosimilitud por el prior. Permite incorporar conocimiento previo y cuantificar "
+     "incertidumbre con la distribución posterior, a diferencia del enfoque frecuentista."),
+    ("optimizacion",
+     "¿Qué son las condiciones KKT?",
+     "Las condiciones de Karush-Kuhn-Tucker generalizan los multiplicadores de Lagrange a problemas con "
+     "restricciones de desigualdad. En el óptimo, el gradiente del objetivo es combinación lineal de los "
+     "gradientes de las restricciones activas, con multiplicadores no negativos y holgura complementaria. "
+     "Para problemas convexos son necesarias y suficientes."),
+    ("optimizacion",
+     "¿Qué hace especial al optimizador Adam?",
+     "Adam combina momentum (media móvil del gradiente) con tasas de aprendizaje adaptativas por parámetro "
+     "(media móvil del gradiente al cuadrado), aplicando corrección de sesgo. Da pasos grandes en "
+     "direcciones consistentes y pequeños en ruidosas. AdamW desacopla el weight decay y es el estándar "
+     "para entrenar transformers."),
+    ("python",
+     "¿Qué ventaja tienen los generadores en Python?",
+     "Un generador produce valores con yield manteniendo su estado, sin materializar toda la secuencia en "
+     "memoria. Permite procesar datos enormes o infinitos con consumo constante y construir pipelines "
+     "perezosos y componibles, útiles para hacer streaming de un corpus durante el entrenamiento."),
+    ("python",
+     "Escribe una función que calcule la derivada numérica central de f en x.",
+     "def derivada(f, x, h=1e-5):\n    # diferencia central: O(h^2) de error\n    return (f(x + h) - f(x - h)) / (2 * h)"),
+    ("programacion",
+     "Explica la notación Big-O con ejemplos.",
+     "Big-O describe cómo escala el costo de un algoritmo con el tamaño n, ignorando constantes. O(1) "
+     "constante, O(log n) búsqueda binaria, O(n) recorrido lineal, O(n log n) ordenamientos eficientes, "
+     "O(n²) comparación de pares ingenua, O(2ⁿ) fuerza bruta exponencial. Guía el diseño antes de medir."),
+    ("postgresql",
+     "¿Cuándo conviene crear un índice en PostgreSQL?",
+     "Conviene un índice (B-tree por defecto) sobre columnas usadas frecuentemente en WHERE, JOIN u "
+     "ORDER BY, porque acelera las lecturas a O(log n). El costo: ralentiza escrituras y ocupa espacio. Usa "
+     "EXPLAIN ANALYZE para confirmar que el planificador lo aprovecha en vez de un escaneo secuencial."),
+    ("postgresql",
+     "¿Qué es MVCC en PostgreSQL?",
+     "El control de concurrencia multiversión (MVCC) permite que cada transacción vea una instantánea "
+     "consistente de los datos sin bloquear a los lectores: las actualizaciones crean nuevas versiones de "
+     "las filas en lugar de sobrescribirlas. Es la base del aislamiento ACID con alta concurrencia."),
+    ("mongodb",
+     "¿Cómo se decide el esquema en MongoDB?",
+     "El esquema en MongoDB se guía por los patrones de consulta, no por la estructura de los datos. La "
+     "regla práctica es 'los datos que se leen juntos se almacenan juntos': se embeben datos relacionados "
+     "en un documento cuando se acceden a la vez, y se usan referencias para relaciones de alta "
+     "cardinalidad o datos compartidos."),
+    ("aws",
+     "¿Qué es AWS Lambda y cuándo usarlo?",
+     "AWS Lambda ejecuta código sin gestionar servidores, activado por eventos y facturado por milisegundo "
+     "de ejecución. Es ideal para APIs, procesamiento de eventos y tareas programadas. Hay que considerar "
+     "el límite de 15 minutos, los arranques en frío y el tamaño del paquete de despliegue."),
+    ("aws",
+     "¿Qué clases de almacenamiento ofrece S3?",
+     "S3 ofrece S3 Standard (acceso frecuente), Intelligent-Tiering (mueve objetos automáticamente según "
+     "uso), Standard-IA y One Zone-IA (acceso infrecuente, más baratas) y Glacier (archivado, recuperación "
+     "lenta y económica). Las políticas de ciclo de vida automatizan las transiciones para reducir costos."),
+    ("serverless",
+     "¿Qué hace el Serverless Framework?",
+     "Define aplicaciones serverless de forma declarativa en serverless.yml (funciones, eventos que las "
+     "disparan, recursos y permisos) y las despliega con un comando, traduciendo la configuración a "
+     "CloudFormation en AWS. Abstrae el aprovisionamiento de API Gateway, Lambda y roles IAM, y encaja en "
+     "flujos de infraestructura como código y CI/CD."),
+    ("iac",
+     "¿Qué es infraestructura como código y cómo la implementa Terraform?",
+     "La infraestructura como código gestiona recursos mediante archivos versionados en vez de "
+     "configuración manual. Terraform usa un lenguaje declarativo (HCL): describes el estado deseado y "
+     "calcula el plan de cambios (terraform plan) para alcanzarlo de forma idempotente (apply), manteniendo "
+     "un archivo de estado que mapea los recursos reales."),
+    ("apis",
+     "¿Qué métodos HTTP son idempotentes y por qué importa?",
+     "GET, PUT y DELETE son idempotentes: repetir la petición produce el mismo resultado que hacerla una "
+     "vez. POST no lo es (crea recursos nuevos). La idempotencia importa porque permite reintentar de forma "
+     "segura ante fallos de red sin efectos secundarios duplicados, clave para la fiabilidad de las APIs."),
+    ("apis",
+     "Explica la diferencia entre OAuth 2.0 y JWT.",
+     "OAuth 2.0 es un marco de autorización delegada: permite acceder a recursos en nombre del usuario "
+     "mediante tokens, sin manejar sus credenciales. JWT es un formato de token autocontenido y firmado que "
+     "codifica claims; el servidor lo valida verificando la firma sin consultar una base de datos "
+     "(stateless). OAuth puede usar JWT como formato de sus tokens de acceso."),
+    ("arquitectura_software",
+     "Resume los principios SOLID.",
+     "SOLID: responsabilidad única (una clase, una razón para cambiar), abierto/cerrado (extensible sin "
+     "modificar), sustitución de Liskov (los subtipos son sustituibles por su base), segregación de "
+     "interfaces (interfaces específicas) e inversión de dependencias (depender de abstracciones). Guían "
+     "un diseño orientado a objetos mantenible y desacoplado."),
+    ("arquitectura_software",
+     "¿Cuándo conviene microservicios frente a un monolito?",
+     "Los microservicios convienen cuando se necesita escalado y despliegue independientes, aislamiento de "
+     "fallos y equipos autónomos, y se acepta la complejidad de comunicación en red, consistencia "
+     "distribuida y observabilidad. Al inicio suele ser preferible un monolito modular; conviene migrar "
+     "cuando la complejidad organizativa lo justifica."),
+    ("devops",
+     "¿Qué diferencia hay entre integración y entrega continua?",
+     "La integración continua (CI) automatiza build y pruebas en cada cambio integrado, detectando errores "
+     "temprano. La entrega/despliegue continuo (CD) extiende el pipeline hasta producción de forma "
+     "automática y frecuente. Estrategias como blue-green y canary reducen el riesgo del despliegue."),
+    ("devops",
+     "¿Qué problema resuelven los contenedores Docker?",
+     "Docker empaqueta una aplicación con todas sus dependencias en una imagen inmutable que corre igual en "
+     "cualquier entorno, eliminando el 'en mi máquina funciona'. Los contenedores son más ligeros que las "
+     "máquinas virtuales porque comparten el kernel del host. A escala, Kubernetes los orquesta."),
+    ("data_engineering",
+     "¿Cuál es la diferencia entre ETL y ELT?",
+     "ETL transforma los datos antes de cargarlos en el destino; ELT los carga crudos en un almacén o lago "
+     "y los transforma allí, aprovechando la potencia del destino. ELT domina con la nube y herramientas "
+     "como dbt, porque permite reprocesar desde los datos crudos y escala mejor."),
+    ("data_engineering",
+     "¿Por qué usar formatos columnar como Parquet?",
+     "Los formatos columnar almacenan por columna, así las cargas analíticas leen solo las columnas "
+     "necesarias y comprimen mejor al agrupar valores del mismo tipo. Parquet logra archivos 5-10x más "
+     "pequeños que JSONL con el esquema embebido, ideal para almacenar y consultar grandes corpus."),
+    ("sistemas_distribuidos",
+     "Explica el teorema CAP.",
+     "El teorema CAP dice que un sistema distribuido no puede garantizar a la vez consistencia, "
+     "disponibilidad y tolerancia a particiones. Como las particiones de red son inevitables, el diseño "
+     "elige entre consistencia (CP) y disponibilidad (AP) cuando ocurre una. Los modelos de consistencia "
+     "(linealizable vs. eventual) refinan ese compromiso."),
+    ("sistemas_distribuidos",
+     "¿Cómo logra Raft el consenso?",
+     "Raft elige un líder que recibe todas las escrituras y las replica como entradas de log a los "
+     "seguidores; una entrada se compromete cuando una mayoría la replica. Si el líder falla, los "
+     "seguidores inician una elección por términos con timeouts aleatorizados. Separa el problema en "
+     "elección de líder, replicación de log y seguridad."),
+    ("ciencia_datos",
+     "¿Qué es el análisis exploratorio de datos (EDA)?",
+     "El EDA examina los datos antes de modelar: distribuciones, correlaciones, valores faltantes y "
+     "atípicos, usando estadística descriptiva y visualización (histogramas, boxplots, scatter, mapas de "
+     "calor). Revela la estructura y los problemas de calidad que guían la limpieza y el feature "
+     "engineering."),
+]
+
+
+def to_messages(domain: str, instruction: str, answer: str) -> dict:
+    return {"messages": [
+        {"role": "user", "content": instruction},
+        {"role": "assistant", "content": answer},
+    ], "domain": domain}
+
+
+def main() -> int:
+    SFT_DIR.mkdir(parents=True, exist_ok=True)
+    rng = random.Random(42)
+    records = [to_messages(d, q, a) for d, q, a in EXAMPLES]
+    rng.shuffle(records)
+
+    # split simple 85/15 para SFT
+    n_val = max(1, int(len(records) * 0.15))
+    val, train = records[:n_val], records[n_val:]
+
+    def write(path: Path, recs: list[dict]) -> None:
+        with path.open("w", encoding="utf-8") as f:
+            for r in recs:
+                f.write(json.dumps(r, ensure_ascii=False) + "\n")
+
+    write(SFT_DIR / "instructions.jsonl", records)
+    write(SFT_DIR / "train.jsonl", train)
+    write(SFT_DIR / "val.jsonl", val)
+
+    dist = Counter(r["domain"] for r in records)
+    print(f"SFT dataset: {len(records)} ejemplos | train={len(train)} val={len(val)}")
+    print(f"Dominios cubiertos: {len(dist)}/26")
+    print(f"Escrito en {SFT_DIR.relative_to(REPO)}/")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())

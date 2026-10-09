@@ -1,0 +1,68 @@
+# ──────────────────────────────────────────────────────────────────
+# configs/corpus.yaml — Definición de los 26 dominios del corpus
+# y sus pesos de muestreo (sampling weights).
+#
+# El peso controla la probabilidad de muestrear documentos de cada
+# dominio durante el entrenamiento (dataset weighting, Fase 3).
+# Los pesos NO necesitan sumar 1: se normalizan en runtime.
+#
+# Criterio de pesos (usados por scripts/build_pretrain_corpus.py: en las
+# fuentes mixtas, un doc del dominio d se acepta con probabilidad
+# w_d / max(w); así los temas prioritarios ocupan más del presupuesto):
+#   - 1.5 → temas prioritarios de Sebastian: estadística, optimización,
+#           metaheurística, ciencia de datos, analítica, IA, LLM,
+#           full stack, filosofía y música
+#   - 1.2 → fundamentos que alimentan a los anteriores (ML, DL,
+#           matemáticas, Python)
+#   - 1.0 → resto del stack técnico
+# ──────────────────────────────────────────────────────────────────
+
+domains:
+  estadistica:             { weight: 1.5, label: "Estadística" }
+  optimizacion:            { weight: 1.5, label: "Optimización" }
+  metaheuristica:          { weight: 1.5, label: "Metaheurísticas" }
+  ciencia_datos:           { weight: 1.5, label: "Ciencia de Datos" }
+  analitica:               { weight: 1.5, label: "Analítica y BI" }
+  inteligencia_artificial: { weight: 1.5, label: "Inteligencia Artificial" }
+  llm:                     { weight: 1.5, label: "LLMs" }
+  full_stack:              { weight: 1.5, label: "Desarrollo Full Stack" }
+  filosofia:               { weight: 1.5, label: "Filosofía" }
+  musica:                  { weight: 1.5, label: "Música" }
+  machine_learning:        { weight: 1.2, label: "Machine Learning" }
+  deep_learning:           { weight: 1.2, label: "Deep Learning" }
+  matematicas:             { weight: 1.2, label: "Matemáticas" }
+  python:                  { weight: 1.2, label: "Python" }
+  programacion:            { weight: 1.0, label: "Programación" }
+  postgresql:              { weight: 1.0, label: "PostgreSQL" }
+  mongodb:                 { weight: 1.0, label: "MongoDB" }
+  aws:                     { weight: 1.0, label: "AWS" }
+  serverless:              { weight: 1.0, label: "Serverless Framework" }
+  iac:                     { weight: 1.0, label: "Infraestructura como Código" }
+  apis:                    { weight: 1.0, label: "APIs" }
+  arquitectura_software:   { weight: 1.0, label: "Arquitectura de Software" }
+  devops:                  { weight: 1.0, label: "DevOps" }
+  data_engineering:        { weight: 1.0, label: "Data Engineering" }
+  sistemas_distribuidos:   { weight: 1.0, label: "Sistemas Distribuidos / Computación" }
+  ingenieria_electrica:    { weight: 1.0, label: "Ingeniería Eléctrica" }
+
+cleaning:
+  min_doc_chars: 200            # descartar documentos demasiado cortos
+  max_doc_chars: 500000
+  min_alpha_ratio: 0.6          # proporción mínima de caracteres alfabéticos
+  max_symbol_ratio: 0.15
+  languages: [es, en]           # corpus bilingüe técnico
+
+deduplication:
+  exact: sha256                 # hash exacto por documento normalizado
+  near:
+    method: minhash_lsh
+    num_perm: 128
+    threshold: 0.85             # similitud Jaccard para considerar duplicado
+
+chunking:
+  strategy: semantic            # semantic | fixed | sentence
+  target_tokens: 512
+  overlap_tokens: 64
+
+quality:
+  min_quality_score: 0.5        # umbral del clasificador de calidad (0–1)

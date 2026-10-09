@@ -1,0 +1,160 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "llm-lab/document.schema.json",
+  "title": "Documento del corpus LLM Lab",
+  "description": "Esquema canónico de un documento o chunk del corpus (formato JSONL). Ver docs/04_esquema_corpus.md.",
+  "type": "object",
+  "required": [
+    "id",
+    "domain",
+    "source",
+    "quality_score",
+    "tokens",
+    "content"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{16,64}$",
+      "description": "Hash SHA-256 del contenido normalizado, prefijado con 'sha256:'"
+    },
+    "domain": {
+      "type": "string",
+      "enum": [
+        "estadistica",
+        "optimizacion",
+        "metaheuristica",
+        "ciencia_datos",
+        "analitica",
+        "inteligencia_artificial",
+        "llm",
+        "machine_learning",
+        "deep_learning",
+        "matematicas",
+        "python",
+        "programacion",
+        "full_stack",
+        "postgresql",
+        "mongodb",
+        "aws",
+        "serverless",
+        "iac",
+        "apis",
+        "arquitectura_software",
+        "devops",
+        "data_engineering",
+        "sistemas_distribuidos",
+        "ingenieria_electrica",
+        "filosofia",
+        "musica"
+      ]
+    },
+    "subcategory": {
+      "type": "string"
+    },
+    "difficulty": {
+      "type": "string",
+      "enum": [
+        "introductorio",
+        "intermedio",
+        "avanzado"
+      ]
+    },
+    "source": {
+      "type": "string",
+      "enum": [
+        "libro",
+        "paper",
+        "documentacion",
+        "blog",
+        "codigo",
+        "sintetico"
+      ]
+    },
+    "quality_score": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "tokens": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "title": {
+      "type": "string"
+    },
+    "authors": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "year": {
+      "type": "integer",
+      "minimum": 1900,
+      "maximum": 2100
+    },
+    "content": {
+      "type": "string",
+      "minLength": 1
+    },
+    "summary": {
+      "type": "string"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "language": {
+          "type": "string",
+          "enum": [
+            "es",
+            "en"
+          ]
+        },
+        "license": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string"
+        },
+        "chunk_index": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "chunk_total": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 1
+        },
+        "parent_id": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "has_math": {
+          "type": "boolean"
+        },
+        "has_code": {
+          "type": "boolean"
+        },
+        "extraction_method": {
+          "type": "string"
+        },
+        "dedup_cluster": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "additionalProperties": true
+    }
+  },
+  "additionalProperties": false
+}

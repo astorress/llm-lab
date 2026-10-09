@@ -1,0 +1,37 @@
+{
+  "name": "llm-lab",
+  "dockerComposeFile": [".docker/docker-compose.yml"],
+  "service": "llm_lab",
+  "workspaceFolder": "/app",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "aaron-bond.better-comments",
+        "charliermarsh.ruff",
+        "davidanson.vscode-markdownlint",
+        "eamodio.gitlens",
+        "irongeek.vscode-env",
+        "ms-azuretools.vscode-docker",
+        "ms-python.python",
+        "ms-toolsai.jupyter",
+        "redhat.vscode-yaml",
+        "yzhang.markdown-all-in-one"
+      ],
+      "settings": {
+        "editor.formatOnSave": true,
+        "editor.insertSpaces": true,
+        "python.defaultInterpreterPath": "/usr/local/bin/python",
+        "python.analysis.typeCheckingMode": "basic",
+        "python.analysis.extraPaths": ["src"],
+        "python.testing.pytestEnabled": true,
+        "[python]": {
+          "editor.defaultFormatter": "charliermarsh.ruff",
+          "editor.codeActionsOnSave": {
+            "source.organizeImports": "explicit"
+          }
+        }
+      }
+    }
+  },
+  "postCreateCommand": "chmod +x .docker/entrypoint.sh && .docker/entrypoint.sh"
+}

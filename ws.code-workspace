@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "/app",
+			"name": "[✪] LLM Lab",
+		},
+		{
+			"path": "/app/.envs",
+			"name": "[⛭] LLM Lab Envs",
+		}
+	],
+	"settings": {}
+}

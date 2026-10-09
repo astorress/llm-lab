@@ -1,0 +1,101 @@
+# ─── Python ──────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.installed.cfg
+*.egg
+.eggs/
+build/
+dist/
+pip-log.txt
+pip-delete-this-directory.txt
+.venv/
+venv/
+env/
+
+# ─── Notebooks ───────────────────────────────────────────────────
+.ipynb_checkpoints/
+*/.ipynb_checkpoints/*
+
+# ─── Caches / herramientas ───────────────────────────────────────
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.tox/
+.cache/
+
+# ─── Datos pesados (no subir a git) ──────────────────────────────
+# Se versiona el corpus SEMILLA curado (fuente) y el dataset SFT; los
+# artefactos derivados (processed/splits) son regenerables con
+# `python scripts/build_corpus.py` y quedan fuera del control de versiones.
+datasets/raw/*
+datasets/processed/*
+datasets/splits/*
+datasets/pretrain/
+datasets/tokenized/
+!datasets/raw/.gitkeep
+!datasets/processed/.gitkeep
+!datasets/splits/.gitkeep
+!datasets/raw/seed/
+!datasets/raw/seed/**
+# (datasets/sft/ NO se ignora: es contenido curado a mano)
+# datasets/raw/personal/ (tu corpus personal) queda ignorado por datasets/raw/*
+
+# ─── Modelos / checkpoints ───────────────────────────────────────
+tokenizer/trained/*
+embeddings/trained/*
+checkpoints/*
+*.pt
+*.pth
+*.bin
+*.safetensors
+
+# Conservar .gitkeep en directorios vacíos
+!**/.gitkeep
+
+# ─── Logs / outputs ──────────────────────────────────────────────
+logs/*
+outputs/*
+experiments/runs/
+visualization/*.html
+visualization/*.png
+visualization/*.svg
+!visualization/.gitkeep
+!logs/.gitkeep
+!outputs/.gitkeep
+
+# ─── Variables de entorno ────────────────────────────────────────
+.env
+.env.local
+
+# ─── Editores / IDE ──────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ─── macOS ───────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ─── Linux ───────────────────────────────────────────────────────
+*~
+.Trash-*
+
+# ─── Windows ─────────────────────────────────────────────────────
+Thumbs.db
+Desktop.ini
+
+# ─── Específico al proyecto ──────────────────────────────────────
+wandb/
+mlruns/
+runs/
+*.lock
+.colab/

@@ -1,0 +1,55 @@
+# ──────────────────────────────────────────────────────────────────
+# configs/small.yaml — Perfil SMALL: T4 16 GB (Colab Free / Kaggle).
+#
+# ~17 M parámetros · ~350 M tokens (≈ 20 tokens/parámetro, Chinchilla).
+# Tokens por paso = batch · seq · accum = 32·512·4 = 65 536
+# Pasos = 350 M / 65 536 ≈ 5 300  → ~1.5–2 h en T4 con SDPA + fp16.
+# ──────────────────────────────────────────────────────────────────
+
+profile: small
+target_hardware: "NVIDIA T4 (16 GB) — Colab Free / Kaggle"
+
+tokenizer:
+  vocab_size: 16384
+  sample_docs: 300000      # documentos muestreados para entrenar el BPE
+
+model:
+  vocab_size: 16384
+  d_model: 384
+  n_layers: 6
+  n_heads: 6
+  n_kv_heads: null         # MHA (GQA no aporta mucho a esta escala)
+  d_ff: 1024               # ≈ 8/3·d_model (SwiGLU usa 3 matrices)
+  max_seq_len: 512
+  dropout: 0.0             # pre-entrenamiento de 1 época: sin dropout
+  tie_embeddings: true
+  positional: rope
+  swiglu: true
+  use_sdpa: true           # kernel fusionado (Flash/mem-efficient)
+
+training:
+  batch_size: 32
+  gradient_accumulation_steps: 4     # batch efectivo = 128 secuencias
+  max_steps: 5300
+  eval_every_steps: 250
+  eval_iters: 50
+  checkpoint_every_steps: 250        # Colab corta sesiones: guardar seguido
+  lr: 1.0e-3
+  min_lr_ratio: 0.1
+  weight_decay: 0.1
+  warmup_steps: 300
+  scheduler: cosine
+  grad_clip_norm: 1.0
+  mixed_precision: fp16              # T4 no soporta bf16
+  compile: false                     # en T4 el compile tarda más de lo que ahorra
+
+finetuning:
+  base_model: "HuggingFaceTB/SmolLM2-135M"   # ruta LoRA alternativa (notebook 07)
+  lora_r: 8
+  lora_alpha: 16
+  lora_dropout: 0.05
+  use_qlora: false
+
+evaluation:
+  eval_batch_size: 16
+  max_eval_samples: 500

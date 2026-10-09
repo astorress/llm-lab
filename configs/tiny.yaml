@@ -1,0 +1,46 @@
+# ──────────────────────────────────────────────────────────────────
+# configs/tiny.yaml — Perfil TINY: smoke test en CPU / Mac / contenedor.
+# Usa SOLO fuentes locales (corpus personal + semilla): corre offline en
+# minutos y valida el pipeline completo antes de gastar GPU.
+# ──────────────────────────────────────────────────────────────────
+
+profile: tiny
+target_hardware: "CPU / Apple Silicon / devcontainer"
+
+tokenizer:
+  vocab_size: 4096
+  sample_docs: 20000
+
+model:
+  vocab_size: 4096
+  d_model: 128
+  n_layers: 2
+  n_heads: 4
+  n_kv_heads: null
+  d_ff: 352               # ≈ 8/3·d_model (SwiGLU)
+  max_seq_len: 128
+  dropout: 0.0
+  tie_embeddings: true
+  positional: rope
+  swiglu: true
+  use_sdpa: true
+
+training:
+  batch_size: 16
+  gradient_accumulation_steps: 1
+  max_steps: 300
+  eval_every_steps: 100
+  eval_iters: 10
+  checkpoint_every_steps: 100
+  lr: 1.0e-3
+  min_lr_ratio: 0.1
+  weight_decay: 0.1
+  warmup_steps: 30
+  scheduler: cosine
+  grad_clip_norm: 1.0
+  mixed_precision: fp32
+  compile: false
+
+evaluation:
+  eval_batch_size: 16
+  max_eval_samples: 200

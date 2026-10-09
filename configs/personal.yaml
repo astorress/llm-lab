@@ -1,0 +1,48 @@
+# ──────────────────────────────────────────────────────────────────
+# configs/personal.yaml — Corpus PERSONAL (lo que hace "tuyo" al modelo).
+#
+# ${PERSONAL_ROOT} = carpeta repositorio-personal.
+#   · Local (Mac):       PERSONAL_ROOT=..  (default)
+#   · Devcontainer:      PERSONAL_ROOT=/personal (montado read-only)
+#
+# ⚠️ Este corpus NUNCA se sube a git ni a un dataset público de HF:
+#    datasets/raw/personal/ está en .gitignore. Antes de escribirlo se
+#    redactan secretos (claves AWS, tokens, passwords) y correos.
+# ──────────────────────────────────────────────────────────────────
+
+roots:
+  # Maestría: tesis Mixture of Experts (LaTeX), artículo, notebooks y código
+  # del forecaster → aporta estadística, series de tiempo y ML. Los documentos
+  # se etiquetan por contenido; si no quieres nada de energía, coméntalo.
+  - path: ${PERSONAL_ROOT}/maestria
+    domain_hint: estadistica
+    exclude: ["**/backup/**", "**/results/**", "**/data/**"]
+  # Libros propios en PDF (series de tiempo, etc.)
+  - path: ${PERSONAL_ROOT}/libros
+    domain_hint: estadistica
+  # Proyectos de MLOps / ML
+  - path: ${PERSONAL_ROOT}/mlflow
+    domain_hint: machine_learning
+  - path: ${PERSONAL_ROOT}/mlop-sagemaker
+    domain_hint: aws
+  - path: ${PERSONAL_ROOT}/scala
+    domain_hint: programacion
+  - path: ${PERSONAL_ROOT}/skills
+    domain_hint: inteligencia_artificial
+  # La documentación y bibliografía de este mismo laboratorio
+  - path: docs
+    domain_hint: inteligencia_artificial
+
+extensions: [.md, .tex, .txt, .rst, .py, .ipynb, .scala, .sql, .pdf, .docx]
+
+# Carpetas que nunca se leen
+skip_dirs: [.git, .venv, venv, env, node_modules, site-packages, __pycache__,
+            .ipynb_checkpoints, .pytest_cache, target, dist, build, .serverless,
+            checkpoints, mlruns, wandb]
+
+# Archivos que nunca se leen (pueden contener credenciales)
+skip_files: [".env*", "*secret*", "*credential*", "*.pem", "*.key", "id_rsa*"]
+
+max_file_mb: 20
+max_pdf_pages: 400
+min_chars: 200

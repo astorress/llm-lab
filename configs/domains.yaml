@@ -1,0 +1,201 @@
+# ──────────────────────────────────────────────────────────────────
+# configs/domains.yaml — Léxico bilingüe (es/en) de los 26 dominios.
+#
+# El clasificador (llm_lab.data.domains) cuenta cuántos términos
+# DISTINTOS de cada dominio aparecen en un documento. Un doc pasa el
+# filtro si el total de términos distintos ≥ min_domain_hits y se le
+# asigna el dominio con más coincidencias. Es un filtro léxico: barato,
+# explicable y suficiente para recortar la web hacia tus temas
+# (técnicos y también humanidades: filosofía y música).
+# Términos en minúscula; se buscan con límites de palabra.
+# ──────────────────────────────────────────────────────────────────
+
+estadistica: [
+  estadística, statistics, probabilidad, probability, distribución normal, normal distribution,
+  varianza, variance, desviación estándar, standard deviation, prueba de hipótesis,
+  hypothesis test, p-valor, p-value, intervalo de confianza, confidence interval, bayesiano,
+  bayesian, máxima verosimilitud, maximum likelihood, regresión lineal, linear regression,
+  series de tiempo, time series, arima, autocorrelación, autocorrelation, estacionariedad,
+  stationarity, bootstrap, regresión bayesiana, inferencia bayesiana, bayesian inference, anova,
+  chi-cuadrado, chi-square, distribución de probabilidad, probability distribution,
+  teorema central del límite, central limit theorem, markov chain monte carlo, mcmc,
+  estadística descriptiva, descriptive statistics, test de student, t-test, pronóstico,
+  forecasting, suavizamiento exponencial, exponential smoothing]
+
+optimizacion: [
+  optimización, optimization, función objetivo, objective function, programación lineal,
+  linear programming, programación entera, integer programming, convexo, convex,
+  multiplicadores de lagrange, lagrange   multiplier, karush-kuhn-tucker, kkt, método simplex,
+  simplex method, newton-raphson, óptimo global, global optimum, adam optimizer,
+  optimización convexa, convex optimization, programación no lineal, nonlinear programming,
+  programación dinámica, dynamic programming, investigación de operaciones, operations research,
+  dualidad, duality, punto interior, interior point, optimización estocástica,
+  stochastic optimization, optimización multiobjetivo, multi-objective optimization,
+  frontera de pareto, pareto front, branch and bound, gurobi, pyomo]
+
+metaheuristica: [
+  metaheurística, metaheuristic, heurística, heuristic, algoritmo genético, genetic algorithm,
+  algoritmos evolutivos, evolutionary algorithm, evolución diferencial, differential evolution,
+  enjambre de partículas, particle swarm, pso, colonia de hormigas, ant colony,
+  recocido simulado, simulated annealing, búsqueda tabú, tabu search, grasp, búsqueda local,
+  local search, nsga-ii, algoritmo memético, memetic algorithm, crossover, mutación,
+  mutation, función de aptitud, fitness function, exploración y explotación,
+  exploration and exploitation, no free lunch, cma-es, hiperheurística, hyper-heuristic,
+  optimización bayesiana, bayesian optimization]
+
+ciencia_datos: [
+  ciencia de datos, data science, análisis exploratorio, exploratory data   analysis, pandas,
+  dataframe, visualización de datos, data visualization, matplotlib, jupyter, outlier,
+  valor atípico, imputación, missing values, conjunto de datos, correlación, correlation,
+  dashboard, data cleaning, limpieza de datos, análisis de datos, data analysis,
+  científico de datos, data scientist, seaborn, plotly, polars, ingeniería de características,
+  a/b testing, prueba a/b, storytelling con datos, data storytelling, modelo predictivo,
+  predictive model, kaggle, series temporales]
+
+analitica: [
+  analítica, analytics, analítica de datos, data analytics, business intelligence,
+  inteligencia de negocios, kpi, indicador clave, métrica de negocio, business metric, power bi,
+  tableau, looker, metabase, dashboard, cuadro de mando, olap, cubo olap,
+  modelo dimensional, dimensional model, tabla de hechos, fact table, esquema estrella,
+  star schema, cohortes, cohort analysis, embudo de conversión, conversion funnel, retención,
+  retention, segmentación, segmentation, analítica predictiva, predictive analytics,
+  analítica prescriptiva, prescriptive analytics, google analytics, dax, sql analítico]
+
+inteligencia_artificial: [
+  inteligencia artificial, artificial intelligence, reinforcement learning,
+  aprendizaje por refuerzo, agente   inteligente, intelligent agent, natural language processing,
+  procesamiento de   lenguaje natural, computer vision, visión por computador,
+  knowledge representation, search algorithm, heuristic, heurística, generative model,
+  modelo generativo, agentes de ia, ai agents, planificación automática, automated planning,
+  redes bayesianas, bayesian network, sistemas expertos, expert system, alineación de ia,
+  ai alignment, ética de la ia, ai ethics, aprendizaje profundo por refuerzo,
+  deep reinforcement learning, turing]
+
+llm: [
+  large language model, modelo de lenguaje, language model, llm, gpt, transformer decoder,
+  tokenizer, tokenización, tokenization, prompt, prompt engineering, ingeniería de prompts,
+  fine-tuning, instruction tuning, rlhf, dpo, lora, qlora, embeddings,
+  retrieval-augmented generation, rag, base de datos vectorial, vector database,
+  ventana de contexto, context window, alucinación, hallucination, chain-of-thought, few-shot,
+  zero-shot, in-context learning, kv cache, scaling laws, leyes de escalado, perplejidad,
+  perplexity, hugging face, mistral, claude]
+
+machine_learning: [
+  machine learning, aprendizaje automático, aprendizaje supervisado, supervised learning,
+  unsupervised, regresión logística, logistic regression, random forest, gradient boosting,
+  xgboost, overfitting, sobreajuste, cross-validation, validación cruzada, hiperparámetros,
+  hyperparameter, clustering, k-means, feature engineering, scikit-learn, clasificador,
+  classifier, árbol de decisión, decision tree, support vector, bias-variance, ensemble,
+  mixture of experts]
+
+deep_learning: [
+  deep learning, aprendizaje profundo, red neuronal, neural network, backpropagation,
+  retropropagación, convolutional, convolucional, transformer, attention mechanism,
+  mecanismo de atención, self-attention, lstm, recurrent, recurrente, embedding, pytorch,
+  tensorflow, dropout, batch normalization, gradient descent, descenso de gradiente,
+  función de activación, activation function, autoencoder, fine-tuning, pretrained, preentrenado,
+  softmax]
+
+matematicas: [
+  álgebra lineal, linear algebra, vector propio, eigenvector, valor propio, eigenvalue, derivada,
+  derivative, cálculo diferencial, calculus, ecuación diferencial, differential equation,
+  teorema, theorem, demostración, proof, espacio vectorial, vector space,
+  transformada de fourier, fourier transform, laplace, número complejo, complex number,
+  topología, topology, serie de taylor, taylor series, jacobiano, jacobian]
+
+python: [
+  python, def __init__, import numpy, import pandas, pip install, virtualenv, list comprehension,
+  asyncio, pytest, type hints, dataclass, f-string, numpy]
+
+programacion: [
+  programación, programming, algoritmo, algorithm, estructura de datos, data structure,
+  complejidad computacional, time complexity, big o, recursión, recursion,
+  programación orientada a objetos, object-oriented, compilador, compiler, debugging, depuración,
+  git, unit test, prueba unitaria, refactoring, scala, java, javascript, typescript,
+  código fuente, source code]
+
+full_stack: [
+  full stack, full-stack, frontend, front-end, backend, back-end, react, next.js, vue, angular,
+  node.js, express, fastapi, django, flask, html, css, tailwind, typescript, javascript, estado de la aplicación, state management, server-side rendering,
+  renderizado del lado del servidor, orm, prisma, sqlalchemy, autenticación, authentication,
+  websocket, responsive, diseño responsivo, vite, npm]
+
+postgresql: [
+  postgresql, postgres, sql, base de datos relacional, relational database, consulta sql,
+  sql query, transacción, transaction, acid, normalización, normalization, primary key,
+  clave primaria, foreign key, clave foránea, explain analyze, vacuum, stored procedure,
+  procedimiento almacenado]
+
+mongodb: [
+  mongodb, nosql, base de datos documental, document database, aggregation pipeline,
+  pipeline de agregación, sharding, replica set, bson, esquema flexible, mongoose,
+  índice compuesto, compound index]
+
+aws: [
+  aws, amazon web services, amazon s3, s3 bucket, ec2, lambda function, aws lambda, dynamodb,
+  cloudformation, iam, sagemaker, cloudwatch, api gateway, vpc, rds, glue, athena, eventbridge,
+  sns, sqs, región de aws, aws region, cloud computing, computación en la nube]
+
+serverless: [
+  serverless, sin servidor, serverless framework, function as a service, faas, cold start,
+  arranque en frío, serverless.yml, event-driven, dirigido por eventos, aws lambda,
+  step functions]
+
+iac: [
+  infraestructura como código, infrastructure as code, terraform, cloudformation, pulumi,
+  ansible, aws cdk, provisioning, aprovisionamiento, idempotente, idempotent, state file,
+  declarativo, declarative]
+
+apis: [
+  rest api, restful, endpoint, graphql, openapi, swagger, autenticación, authentication, oauth,
+  jwt, webhook, rate limiting, status code, código de estado, microservicio, microservice, grpc]
+
+arquitectura_software: [
+  arquitectura de software, software architecture, patrón de   diseño, design pattern,
+  microservicios, microservices, monolito, monolith, solid, acoplamiento, coupling, cohesión,
+  cohesion, domain-driven design, hexagonal, clean architecture, arquitectura limpia,
+  escalabilidad, scalability, event sourcing, cqrs, separation of concerns]
+
+devops: [
+  devops, ci/cd, integración continua, continuous integration, despliegue   continuo,
+  continuous deployment, docker, kubernetes, gitlab ci, github actions, observabilidad,
+  observability]
+
+data_engineering: [
+  data engineering, ingeniería de datos, etl, elt, pipeline de datos, data pipeline, data lake,
+  data warehouse, almacén de datos, apache spark, spark, airflow, kafka, batch processing,
+  procesamiento por lotes, parquet, esquema de datos, data quality, calidad de datos,
+  orquestación, orchestration, dbt]
+
+sistemas_distribuidos: [
+  sistema distribuido, distributed system, consenso, consensus, raft, paxos, teorema cap,
+  cap theorem, replicación, replication, particionamiento, partitioning, tolerancia a fallos,
+  fault tolerance, consistencia eventual, eventual consistency, balanceador de carga,
+  load balancer, computación paralela, parallel computing, gpu, cluster, mapreduce]
+
+ingenieria_electrica: [
+  ingeniería eléctrica, electrical engineering, voltaje, voltage, tensión eléctrica,
+  corriente eléctrica, electric current, impedancia, impedance, capacitor, condensador,
+  inductancia, inductance, circuito, circuit, ley de ohm, ohm's law, kirchhoff, transformador,
+  motor de inducción, induction motor, corriente alterna, alternating current, fasor, phasor,
+  potencia reactiva, reactive power, factor de potencia, power factor, electrónica de potencia,
+  power electronics, inversor, inverter, semiconductor]
+
+filosofia: [
+  filosofía, philosophy, filósofo, philosopher, epistemología, epistemology, ontología, ontology,
+  metafísica, metaphysics, ética, ethics, estética, aesthetics, lógica formal,
+  formal logic, fenomenología, phenomenology, existencialismo, existentialism, estoicismo,
+  stoicism, empirismo, empiricism, racionalismo, rationalism, platón, plato, aristóteles,
+  aristotle, kant, nietzsche, descartes, spinoza, hume, wittgenstein, heidegger,
+  filosofía de la mente, philosophy of mind, filosofía de la ciencia, philosophy of science,
+  conciencia, consciousness, libre albedrío, free will, utilitarismo, utilitarianism, dialéctica,
+  dialectic, hermenéutica, hermeneutics]
+
+musica: [
+  música, music, musical, melodía, melody, armonía, harmony, ritmo, rhythm, acorde, chord,
+  escala musical, musical scale, tonalidad, tonality, contrapunto, counterpoint, compositor,
+  composer, composición musical, musical composition, partitura, sheet music,
+  instrumento musical, musical instrument, guitarra, guitar, piano, violín, violin, orquesta,
+  orchestra, sinfonía, symphony, jazz, blues, rock, salsa, cumbia, vallenato, bach, beethoven,
+  mozart, teoría musical, music theory, producción musical, music production, síntesis de sonido,
+  sound synthesis, midi, tempo, compás, time signature]

@@ -1,0 +1,16 @@
+# Extras PESADOS de los notebooks 00–08 (embeddings, topic modeling, evaluación, LoRA).
+# Opcionales: si faltan, los notebooks los instalan en su celda de setup o
+# saltan esa sección con un aviso (try/except).
+-r requirements.txt
+accelerate>=0.34
+peft>=0.12
+bitsandbytes>=0.43; platform_machine == "x86_64"
+umap-learn>=0.5
+sentencepiece>=0.2
+gensim>=4.3
+nltk>=3.8
+rouge-score>=0.1.2
+sacrebleu>=2.4
+bert-score>=0.3.13
+evaluate>=0.4
+bertopic>=0.16
