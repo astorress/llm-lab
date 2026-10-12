@@ -4,7 +4,7 @@ Contrato de los notebooks educativos 00–08. (El `09_entrenamiento_colab_kaggle
 
 ## Estructura obligatoria de cada notebook
 
-1. **Celda de título** (markdown): título, fase, objetivos de aprendizaje (lista), prerrequisitos, tiempo estimado SMALL/LARGE, badge "Open in Colab" (placeholder de URL).
+1. **Celda de título** (markdown): título, fase, objetivos de aprendizaje (lista), prerrequisitos, tiempo estimado SMALL/LARGE, badge "Open in Colab" (`colab.research.google.com/github/astorress/llm-lab/blob/main/notebooks/<nb>.ipynb`).
 2. **Tabla de contenidos** (markdown con anchors).
 3. **Celda de setup** (código): instala dependencias faltantes con `pip install -q` (sin reinstalar torch en Colab), detecta hardware (CUDA > MPS > CPU), detecta si corre en Colab, fija seeds (Python/NumPy/Torch/CUDA, `SEED = 42`), configura matplotlib/seaborn.
 4. **Celda de configuración SMALL/LARGE** (código): `PROFILE = "auto"` (auto-detección por VRAM, forzable a mano) y un dict `CONFIG` con los hiperparámetros de ambos perfiles.

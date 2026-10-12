@@ -13,7 +13,7 @@ services:
       - 8888:8888
     volumes:
       - ..:/app
-      # repositorio-personal en solo-lectura: fuente del corpus personal
+      # carpeta padre del repo (documentos personales) en solo-lectura: fuente del corpus personal
       - ../..:/personal:ro
       - llm-lab-bashhistory:/commandhistory
       - llm-lab-hf-cache:/hf-cache

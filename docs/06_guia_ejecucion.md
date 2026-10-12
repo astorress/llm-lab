@@ -56,7 +56,7 @@ el smoke test `tiny`; entrenar `small` en CPU tomaría días.
 disco** (imagen + caché de Hugging Face + datos de `small`). Revisa el espacio con `docker system df`.
 
 ```bash
-cd ~/repositorio-personal/llm
+cd llm-lab
 cp .envs/hf.env.example .envs/hf.env      # pega tu HF_TOKEN (lectura); opcional, evita límites de descarga
 ```
 
@@ -70,8 +70,8 @@ Abre el contenedor **de una de estas dos formas**:
   .docker/entrypoint.sh                                        # solo la primera vez: git + pip install -e .
   ```
 
-Dentro del contenedor estás en `/app` (= la carpeta `llm/` del Mac, montada). Tu carpeta
-`repositorio-personal` está montada en `/personal` **solo lectura**, como fuente del corpus personal.
+Dentro del contenedor estás en `/app` (= la carpeta `llm-lab/` del Mac, montada). La carpeta padre
+del repo (tus documentos personales, `PERSONAL_ROOT`) está montada en `/personal` **solo lectura**, como fuente del corpus personal.
 
 ```bash
 make help        # lista todos los comandos
@@ -169,7 +169,7 @@ En RunPod: *Deploy* → imagen `<usuario-dockerhub>/llm-lab:gpu`, volumen en `/w
 `/workspace/llm`, `cd /workspace/llm && make train sft PROFILE=small`.
 
 **3) Traer el modelo de vuelta al Mac:** copia `checkpoints/small/` y `checkpoints/small-sft/` a
-`llm/checkpoints/` (con `scp` o subiéndolos al mismo dataset privado de HF). La inferencia corre bien en CPU:
+`llm-lab/checkpoints/` (con `scp` o subiéndolos al mismo dataset privado de HF). La inferencia corre bien en CPU:
 
 ```bash
 make sample PROFILE=small                # completar texto
@@ -199,8 +199,8 @@ lanzador `09`, que instala `requirements.txt` y ejecuta los mismos scripts.
 6. **Si se corta la sesión:** vuelve a ejecutar todas las celdas; el entrenamiento reanuda desde `last.pt`.
    En Kaggle usa *Save Version → Save & Run All* para que corra en segundo plano sin depender del navegador.
 7. **Usar el modelo:** las celdas finales grafican las curvas, generan texto y corren el SFT. Para chatear
-   en el Mac, descarga `runs/small` y `runs/small-sft` a `llm/checkpoints/small` y
-   `llm/checkpoints/small-sft` y usa `make chat PROFILE=small` en el contenedor.
+   en el Mac, descarga `runs/small` y `runs/small-sft` a `llm-lab/checkpoints/small` y
+   `llm-lab/checkpoints/small-sft` y usa `make chat PROFILE=small` en el contenedor.
 
 ---
 

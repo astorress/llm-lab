@@ -1,7 +1,8 @@
 # ──────────────────────────────────────────────────────────────────
 # configs/personal.yaml — Corpus PERSONAL (lo que hace "tuyo" al modelo).
 #
-# ${PERSONAL_ROOT} = carpeta repositorio-personal.
+# ${PERSONAL_ROOT} = tu carpeta de documentos personales (por defecto, la
+#                    carpeta que contiene este repo).
 #   · Local (Mac):       PERSONAL_ROOT=..  (default)
 #   · Devcontainer:      PERSONAL_ROOT=/personal (montado read-only)
 #

@@ -50,8 +50,8 @@ flowchart TB
 ## 📁 Estructura
 
 ```
-llm/
-├── .devcontainer.json    # devcontainer (patrón data-science)
+llm-lab/
+├── .devcontainer.json    # devcontainer (VS Code → Reopen in Container)
 ├── .docker/              # Dockerfile multi-stage (img-dev CPU / img-gpu CUDA) + compose
 ├── .envs/                # variables (HF_TOKEN); solo *.example se versiona
 ├── Makefile              # atajos del pipeline: make help
@@ -111,7 +111,7 @@ smoke test, datos, entrenamiento en GPU, Colab/Kaggle): **[docs/06 · Guía de e
 ### Inicio rápido (contenedor)
 
 ```bash
-cd ~/repositorio-personal/llm
+cd llm-lab
 cp .envs/hf.env.example .envs/hf.env                         # HF_TOKEN opcional
 docker compose -f .docker/docker-compose.yml up -d --build   # o VS Code → "Reopen in Container"
 docker exec -it LLMLab bash
@@ -143,10 +143,10 @@ Corpus, plataformas (Colab vs Kaggle vs RunPod), buenas prácticas y experimento
 
 ### Docker
 
-Mismo patrón que `repositorio/data-science`: `.devcontainer.json` + `.docker/{Dockerfile,docker-compose.yml,entrypoint.sh,git.sh}` + `.envs/`.
+Estructura: `.devcontainer.json` + `.docker/{Dockerfile,docker-compose.yml,entrypoint.sh,git.sh}` + `.envs/`.
 
 - `img-dev` (CPU, contenedor `LLMLab`): datos, tokenizador, tests, notebooks y smoke test. Monta
-  `repositorio-personal` en `/personal` (solo lectura) y expone JupyterLab en el puerto 8888.
+  la carpeta padre del repo (tus documentos personales, `PERSONAL_ROOT`) en `/personal` (solo lectura) y expone JupyterLab en el puerto 8888.
 - `img-gpu` (CUDA): para hosts con GPU NVIDIA (VM con Docker o RunPod).
 - Extras pesados de los notebooks: opcionales con `WITH_NOTEBOOKS: 'true'` en `build.args` del compose.
 

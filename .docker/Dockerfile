@@ -1,6 +1,6 @@
 ######## BASE IMAGE ########
-# Mismo patrón que repositorio/data-science: Python copiado sobre Node (Claude
-# Code), usuario no-root, historial de bash persistente.
+# Python copiado sobre Node (Claude Code), usuario no-root, historial de bash
+# persistente.
 FROM python:3.12-slim-bookworm AS python-base
 FROM node:24-bookworm-slim AS img-base
 
